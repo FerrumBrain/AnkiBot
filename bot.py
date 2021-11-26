@@ -1,3 +1,4 @@
+import weighted_random
 import random
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, ConversationHandler, \
     CallbackQueryHandler
@@ -38,6 +39,9 @@ def handle_new_photo(update: Update, callback_context: CallbackContext):
 
     update.effective_message.reply_text(Strings.GOT_PHOTO)
     callback_context.user_data["photos"][update.effective_message.caption] = update.message.photo[-1].file_id
+    if "guesses" not in callback_context.user_data.keys():
+        callback_context.user_data["guesses"] = {}
+    callback_context.user_data["guesses"][update.effective_message.caption] = [0, 0]
     return States.WAITING_PHOTO
 
 
@@ -49,6 +53,9 @@ def handle_name(update: Update, callback_context: CallbackContext):
         callback_context.user_data["photos"] = {}
     callback_context.user_data["photos"][update.effective_message.text] = callback_context.user_data["temporary"]
     update.effective_message.reply_text(Strings.GOT_NAME)
+    if "guesses" not in callback_context.user_data.keys():
+        callback_context.user_data["guesses"] = {}
+    callback_context.user_data["guesses"][update.effective_message.text] = [0, 0]
     return States.WAITING_PHOTO
 
 
@@ -104,7 +111,7 @@ def make_quiz_keyboard(right_name: str, data: dict, is_new_question: bool):
 
 def handle_start_quiz(update: Update, callback_context: CallbackContext):
     if "photos" in callback_context.user_data.keys():
-        right_name = random.choice(list(callback_context.user_data["photos"].keys()))
+        right_name = weighted_random.choice(callback_context.user_data["guesses"], list(callback_context.user_data["photos"].keys()))
 
         callback_context.user_data["questions"] = []
         callback_context.user_data["question_id"] = 0
@@ -145,7 +152,7 @@ def handle_next_question(update: Update, callback_context: CallbackContext):
 
     update.callback_query.answer()
     if callback_context.user_data["question_id"] == callback_context.user_data["questions_asked"] - 1:
-        right_name = random.choice(callback_context.user_data["list_not_asked_questions"])
+        right_name = weighted_random.choice(callback_context.user_data["guesses"], callback_context.user_data["list_not_asked_questions"])
     else:
         right_name = callback_context.user_data["questions"][callback_context.user_data["question_id"] + 1][0]
 
@@ -169,10 +176,14 @@ def handle_finish_quiz(update: Update, callback_context: CallbackContext):
 
     update.effective_message.delete()
     right_answer = 0
-    for current_answer, current_right_answer in zip(callback_context.user_data["user_answers"],
-                                                    callback_context.user_data["questions"]):
-        if current_answer == current_right_answer[0]:
+    for index, result in enumerate(zip(callback_context.user_data["user_answers"],
+                                       callback_context.user_data["questions"])):
+        current_answer, current_right_answer = result
+        current_right_answer = current_right_answer[0]
+        if current_answer == current_right_answer:
             right_answer += 1
+            callback_context.user_data["guesses"][current_right_answer][0] += 1
+        callback_context.user_data["guesses"][current_right_answer][1] += 1
 
     result = right_answer / callback_context.user_data['questions_asked']
     if result <= 0.4:
