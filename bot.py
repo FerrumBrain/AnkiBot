@@ -117,7 +117,7 @@ def handle_start_quiz(update: Update, callback_context: CallbackContext):
         callback_context.user_data["question_id"] = 0
         callback_context.user_data["questions_asked"] = 0
         callback_context.user_data["list_not_asked_questions"] = list(callback_context.user_data["photos"].keys())
-        callback_context.user_data["total_questions"] = min(10, len(callback_context.user_data["photos"]))
+        callback_context.user_data["total_questions"] = min(20, len(callback_context.user_data["photos"]))
         callback_context.user_data["user_answers"] = []
 
         update.effective_message.reply_photo(
@@ -313,7 +313,7 @@ class Bot:
         )
 
         get_collection_handler = ConversationHandler(
-            entry_points=[CommandHandler('get_collection', handle_start_get_collection, run_async=True)],
+            entry_points=[CommandHandler('collection', handle_start_get_collection, run_async=True)],
             states={
                 States.WAITING_TRANSITION: [
                     CallbackQueryHandler(handle_next_photo, pattern="^NEXT$"),
@@ -328,8 +328,8 @@ class Bot:
         self.updater.dispatcher.add_handler(CommandHandler('help', handle_help, run_async=True))
         self.updater.dispatcher.add_handler(get_collection_handler)
         self.updater.dispatcher.add_handler(quiz_handler)
-        # self.updater.dispatcher.add_handler(new_photo_handler)
-        self.updater.dispatcher.add_handler(MessageHandler(Filters.photo, handle_new_photo, run_async=True))
+        self.updater.dispatcher.add_handler(new_photo_handler)
+        # self.updater.dispatcher.add_handler(MessageHandler(Filters.photo, handle_new_photo, run_async=True))
 
     def run(self):
         self.updater.start_polling()
