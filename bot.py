@@ -143,16 +143,10 @@ def handle_start_test_quiz(update: Update, callback_context: CallbackContext):
     callback_context.user_data["photos"] = {}
     callback_context.user_data["guesses"] = {}
     test_photos = {
-        "Яблоко": 'AgACAgIAAxkBAAIH02G2Z-9-P-M4zszGZgABqGtzkhKdkwACvbYxG1XwsEmaRSp0jntNOgEAAwIAA20AAyME',
-        "Книга": 'AgACAgIAAxkBAAIH1WG2Z_Un2PLyJLJYjd2ToCsNyAt3AAJLuDEbUCSwSVrR0t9q7nmXAQADAgADeAADIwQ',
-        "Машина": 'AgACAgIAAxkBAAIH12G2Z_33cm8kH2OJDhyb4qEymudQAAJMuDEbUCSwSRwtilYifB0TAQADAgADbQADIwQ',
-        "Морковь": 'AgACAgIAAxkBAAIH2WG2aAZiaz2DZ1j6oz_vD1ZlKG_DAAJNuDEbUCSwSadY7NYFpFZ-AQADAgADbQADIwQ',
-        "Кот": 'AgACAgIAAxkBAAIH22G2aBA6mfg6iSZe__lwVHwGn9xNAAJOuDEbUCSwSZ6ArVSjSzhtAQADAgADbQADIwQ',
-        "Часы": 'AgACAgIAAxkBAAIH3WG2aBgTM3yLZfg2GlKkrbD4Q9zkAAJPuDEbUCSwSWNWXqINO8WnAQADAgADbQADIwQ',
-        "Кубок": 'AgACAgIAAxkBAAIH32G2aCPqNrHPfyc1n2CIoR7RIyIoAAJQuDEbUCSwSRWLJjo0PKLWAQADAgADbQADIwQ',
-        "Собака": 'AgACAgIAAxkBAAIH4WG2aC0EJ0n8l_d2GQLuyKJrT0QUAAJRuDEbUCSwSZOVaSbiLQraAQADAgADbQADIwQ',
-        "Хоккей": 'AgACAgIAAxkBAAIH42G2aDYsKUUrPGachtgrO3BwUicjAAJSuDEbUCSwSZ3wG76Fx2p2AQADAgADbQADIwQ',
-        "Картина": 'AgACAgIAAxkBAAIH5WG2aD2GdIsl5wyfiUi8tY5h_bvgAAJTuDEbUCSwSUeOZfmI3Ux7AQADAgADbQADIwQ'
+        "Мэрилин Монро": 'AgACAgIAAxkBAAIILmG2eQt1o3JI8ryTj8r4cXpfzkT-AAJsuDEbUCSwSboOGU5KgAIXAQADAgADbQADIwQ',
+        "Микки Маус": 'AgACAgIAAxkBAAIIMGG2eRaidc-hhRM29BLD1TNhUMgVAAJtuDEbUCSwSchAJPbuOpS1AQADAgADbQADIwQ',
+        "Гомер Симпсон": 'AgACAgIAAxkBAAIIMmG2eSG1KSpVYSuPKGspfl0LE1lFAAJvuDEbUCSwSb5Ib9Wc0nRJAQADAgADbQADIwQ',
+        "Альберт Эйнштейн": 'AgACAgIAAxkBAAIINGG2eTWe7S49pvSAYw6kzDR79QNIAAJwuDEbUCSwSbVXiQozlDZgAQADAgADbQADIwQ'
     }
     for name in test_photos.keys():
         callback_context.user_data["photos"][name] = test_photos[name]
