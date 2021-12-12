@@ -192,9 +192,15 @@ def handle_next_question(update: Update, callback_context: CallbackContext):
 
 
 def handle_finish_quiz(update: Update, callback_context: CallbackContext):
-    if callback_context.user_data["user_answers"][callback_context.user_data["question_id"]] is None:
+    if callback_context.user_data["user_answers"][callback_context.user_data["question_id"]] is None and not callback_context.user_data["is_cancel"]:
         update.callback_query.answer(Strings.SELECT, show_alert=True)
         return
+
+    if callback_context.user_data["user_answers"][callback_context.user_data["question_id"]] == callback_context.user_data["questions"][callback_context.user_data["question_id"]][0]:
+        update.callback_query.answer(Strings.CORRECT_ANSWER, show_alert=True)
+    else:
+        update.callback_query.answer(f'{Strings.INCORRECT_ANSWER}\n{Strings.YOUR_ANSWER}{callback_context.user_data["user_answers"][callback_context.user_data["question_id"]]}\n{Strings.RIGHT_ANSWER}{callback_context.user_data["questions"][callback_context.user_data["question_id"]][0]}', show_alert=True)
+
 
     update.effective_message.delete()
     right_answer = 0
@@ -208,7 +214,7 @@ def handle_finish_quiz(update: Update, callback_context: CallbackContext):
         callback_context.user_data["guesses"][current_right_answer][1] += 1
 
     result = right_answer / callback_context.user_data['questions_asked']
-    if result <= 0.4:
+    if result <= 0.4 or right_answer == 0:
         quality = Strings.BAD_RESULT
     elif result <= 0.8:
         quality = Strings.GOOD_RESULT
@@ -222,7 +228,15 @@ def handle_finish_quiz(update: Update, callback_context: CallbackContext):
         callback_context.user_data["guesses"] = callback_context.user_data["old_data"]["guesses"]
         callback_context.user_data["photos"] = callback_context.user_data["old_data"]["photos"]
 
+    callback_context.user_data["is_cancel"] = False
+    callback_context.user_data["is_test"] = False
+
     return ConversationHandler.END
+
+
+def handle_cancel_quiz(update: Update, callback_context: CallbackContext):
+    callback_context.user_data["is_cancel"] = True
+    return handle_finish_quiz(update, callback_context)
 
 
 def handle_person_choice(update: Update, callback_context: CallbackContext):
@@ -336,7 +350,7 @@ class Bot:
                 ]
             },
             fallbacks=[CommandHandler('cancel', handle_cancel, run_async=True),
-                       CallbackQueryHandler(handle_finish_quiz, pattern="^CANCEL$")]
+                       CallbackQueryHandler(handle_cancel_quiz, pattern="^CANCEL$")]
         )
 
         get_collection_handler = ConversationHandler(
