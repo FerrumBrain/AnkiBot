@@ -1,3 +1,5 @@
+import telegram
+
 import weighted_random
 import random
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, ConversationHandler, \
@@ -90,17 +92,13 @@ def make_quiz_keyboard(right_name: str, data: dict, is_new_question: bool):
         else:
             buttons.append([InlineKeyboardButton(f"❌ {name}", callback_data=f"{i}_PICK")])
 
-    prev_button = InlineKeyboardButton(Strings.PREV, callback_data="PREV")
     next_button = InlineKeyboardButton(Strings.NEXT, callback_data="NEXT")
     finish_button = InlineKeyboardButton(Strings.FINISH, callback_data="FINISH")
 
     if data["question_id"] == data["total_questions"] - 1:
-        if data["question_id"] != 0:
-            buttons.append([prev_button, finish_button])
-        else:
-            buttons.append([finish_button])
+        buttons.append([finish_button])
     elif data["question_id"] != 0:
-        buttons.append([prev_button, next_button])
+        buttons.append([next_button])
         buttons.append([InlineKeyboardButton(Strings.CANCEL_QUIZ, callback_data="CANCEL")])
     else:
         buttons.append([next_button])
@@ -129,26 +127,50 @@ def handle_start_quiz(update: Update, callback_context: CallbackContext):
     update.effective_message.reply_text(Strings.EMPTY_LIST)
 
 
-def handle_prev_question(update: Update, callback_context: CallbackContext):
-    update.callback_query.answer()
-    right_name = callback_context.user_data["questions"][callback_context.user_data["question_id"] - 1][0]
+def handle_start_test_quiz(update: Update, callback_context: CallbackContext):
+    callback_context.user_data["is_test"] = True
 
-    callback_context.user_data["question_id"] -= 1
-    update.callback_query.message.edit_media(
-        InputMediaPhoto(
-            callback_context.user_data["photos"][right_name]
-        ),
-        reply_markup=make_quiz_keyboard(
-            right_name,
-            callback_context.user_data,
-            False
-        ))
+    callback_context.user_data["old_data"] = {}
+    if "photos" in callback_context.user_data.keys():
+        callback_context.user_data["old_data"]["photos"] = callback_context.user_data["photos"]
+    else:
+        callback_context.user_data["old_data"]["photos"] = {}
+    if "guesses" in callback_context.user_data.keys():
+        callback_context.user_data["old_data"]["guesses"] = callback_context.user_data["guesses"]
+    else:
+        callback_context.user_data["old_data"]["guesses"] = {}
+
+    callback_context.user_data["photos"] = {}
+    callback_context.user_data["guesses"] = {}
+    test_photos = {
+        "Яблоко": 'AgACAgIAAxkBAAIH02G2Z-9-P-M4zszGZgABqGtzkhKdkwACvbYxG1XwsEmaRSp0jntNOgEAAwIAA20AAyME',
+        "Книга": 'AgACAgIAAxkBAAIH1WG2Z_Un2PLyJLJYjd2ToCsNyAt3AAJLuDEbUCSwSVrR0t9q7nmXAQADAgADeAADIwQ',
+        "Машина": 'AgACAgIAAxkBAAIH12G2Z_33cm8kH2OJDhyb4qEymudQAAJMuDEbUCSwSRwtilYifB0TAQADAgADbQADIwQ',
+        "Морковь": 'AgACAgIAAxkBAAIH2WG2aAZiaz2DZ1j6oz_vD1ZlKG_DAAJNuDEbUCSwSadY7NYFpFZ-AQADAgADbQADIwQ',
+        "Кот": 'AgACAgIAAxkBAAIH22G2aBA6mfg6iSZe__lwVHwGn9xNAAJOuDEbUCSwSZ6ArVSjSzhtAQADAgADbQADIwQ',
+        "Часы": 'AgACAgIAAxkBAAIH3WG2aBgTM3yLZfg2GlKkrbD4Q9zkAAJPuDEbUCSwSWNWXqINO8WnAQADAgADbQADIwQ',
+        "Кубок": 'AgACAgIAAxkBAAIH32G2aCPqNrHPfyc1n2CIoR7RIyIoAAJQuDEbUCSwSRWLJjo0PKLWAQADAgADbQADIwQ',
+        "Собака": 'AgACAgIAAxkBAAIH4WG2aC0EJ0n8l_d2GQLuyKJrT0QUAAJRuDEbUCSwSZOVaSbiLQraAQADAgADbQADIwQ',
+        "Хоккей": 'AgACAgIAAxkBAAIH42G2aDYsKUUrPGachtgrO3BwUicjAAJSuDEbUCSwSZ3wG76Fx2p2AQADAgADbQADIwQ',
+        "Картина": 'AgACAgIAAxkBAAIH5WG2aD2GdIsl5wyfiUi8tY5h_bvgAAJTuDEbUCSwSUeOZfmI3Ux7AQADAgADbQADIwQ'
+    }
+    for name in test_photos.keys():
+        callback_context.user_data["photos"][name] = test_photos[name]
+        callback_context.user_data["guesses"][name] = [0, 0]
+
+    handle_start_quiz(update, callback_context)
+    return States.WAITING_ANSWER
 
 
 def handle_next_question(update: Update, callback_context: CallbackContext):
     if callback_context.user_data["user_answers"][callback_context.user_data["question_id"]] is None:
         update.callback_query.answer(Strings.SELECT, show_alert=True)
         return
+
+    if callback_context.user_data["user_answers"][callback_context.user_data["question_id"]] == callback_context.user_data["questions"][callback_context.user_data["question_id"]][0]:
+        update.callback_query.answer(Strings.CORRECT_ANSWER, show_alert=True)
+    else:
+        update.callback_query.answer(f'{Strings.INCORRECT_ANSWER}\n{Strings.YOUR_ANSWER}{callback_context.user_data["user_answers"][callback_context.user_data["question_id"]]}\n{Strings.RIGHT_ANSWER}{callback_context.user_data["questions"][callback_context.user_data["question_id"]][0]}', show_alert=True)
 
     update.callback_query.answer()
     if callback_context.user_data["question_id"] == callback_context.user_data["questions_asked"] - 1:
@@ -195,6 +217,11 @@ def handle_finish_quiz(update: Update, callback_context: CallbackContext):
 
     format_result = format(result * 100, ".2f")
     update.effective_message.reply_text(f"{Strings.RESULT}{format_result}%\n\n{quality}")
+
+    if callback_context.user_data["is_test"]:
+        callback_context.user_data["guesses"] = callback_context.user_data["old_data"]["guesses"]
+        callback_context.user_data["photos"] = callback_context.user_data["old_data"]["photos"]
+
     return ConversationHandler.END
 
 
@@ -299,11 +326,11 @@ class Bot:
         )
 
         quiz_handler = ConversationHandler(
-            entry_points=[CommandHandler('quiz', handle_start_quiz, run_async=True)],
+            entry_points=[CommandHandler('quiz', handle_start_quiz, run_async=True),
+                          CommandHandler('test_quiz', handle_start_test_quiz, run_async=True)],
             states={
                 States.WAITING_ANSWER: [
                     CallbackQueryHandler(handle_next_question, pattern="^NEXT$"),
-                    CallbackQueryHandler(handle_prev_question, pattern="^PREV$"),
                     CallbackQueryHandler(handle_finish_quiz, pattern="^FINISH$"),
                     CallbackQueryHandler(handle_person_choice, pattern=".*_PICK$")
                 ]
