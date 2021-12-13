@@ -220,13 +220,17 @@ def handle_finish_quiz(update: Update, callback_context: CallbackContext):
             callback_context.user_data["guesses"][current_right_answer][0] += 1
         callback_context.user_data["guesses"][current_right_answer][1] += 1
 
-    result = right_answer / callback_context.user_data['questions_asked']
-    if result <= 0.4 or callback_context.user_data['questions_asked'] == 0:
+    if callback_context.user_data['questions_asked'] == 0:
+        result = 0
         quality = Strings.BAD_RESULT
-    elif result <= 0.8:
-        quality = Strings.GOOD_RESULT
     else:
-        quality = Strings.SUPER_RESULT
+        result = right_answer / callback_context.user_data['questions_asked']
+        if result <= 0.4:
+            quality = Strings.BAD_RESULT
+        elif result <= 0.8:
+            quality = Strings.GOOD_RESULT
+        else:
+            quality = Strings.SUPER_RESULT
 
     format_result = format(result * 100, ".2f")
     update.effective_message.reply_text(f"{Strings.RESULT}{format_result}%\n\n{quality}")
