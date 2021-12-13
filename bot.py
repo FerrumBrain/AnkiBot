@@ -1,5 +1,4 @@
-import telegram
-
+import os
 import weighted_random
 import random
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, ConversationHandler, \
@@ -153,10 +152,10 @@ def handle_start_test_quiz(update: Update, callback_context: CallbackContext):
     callback_context.user_data["photos"] = {}
     callback_context.user_data["guesses"] = {}
     test_photos = {
-        "Мэрилин Монро": 'AgACAgIAAxkBAAIILmG2eQt1o3JI8ryTj8r4cXpfzkT-AAJsuDEbUCSwSboOGU5KgAIXAQADAgADbQADIwQ',
-        "Микки Маус": 'AgACAgIAAxkBAAIIMGG2eRaidc-hhRM29BLD1TNhUMgVAAJtuDEbUCSwSchAJPbuOpS1AQADAgADbQADIwQ',
-        "Гомер Симпсон": 'AgACAgIAAxkBAAIIMmG2eSG1KSpVYSuPKGspfl0LE1lFAAJvuDEbUCSwSb5Ib9Wc0nRJAQADAgADbQADIwQ',
-        "Альберт Эйнштейн": 'AgACAgIAAxkBAAIINGG2eTWe7S49pvSAYw6kzDR79QNIAAJwuDEbUCSwSbVXiQozlDZgAQADAgADbQADIwQ'
+        "Мэрилин Монро": os.environ.get("MONRO"),
+        "Микки Маус": os.environ.get("MICKEY"),
+        "Гомер Симпсон":  os.environ.get("HOMER"),
+        "Альберт Эйнштейн":  os.environ.get("EINSTEIN")
     }
     for name in test_photos.keys():
         callback_context.user_data["photos"][name] = test_photos[name]
