@@ -7,7 +7,10 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Callb
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, InputMediaPhoto
 from strings import Strings
 from states import States
+import pandas as pd
 
+
+df = pd.read_csv('names.csv', encoding='windows-1251')
 
 def handle_start(update: Update, _: CallbackContext):
     update.effective_message.reply_text(Strings.START)
@@ -38,6 +41,10 @@ def handle_new_photo(update: Update, callback_context: CallbackContext):
         callback_context.user_data["temporary"] = update.message.photo[-1].file_id
         update.effective_message.reply_text(Strings.OLD_NAME)
         return States.WAITING_NAME
+    elif update.effective_message.caption.split()[0] not in df.values:
+        callback_context.user_data["temporary"] = update.message.photo[-1].file_id
+        update.effective_message.reply_text(Strings.UNKNOWN_NAME)
+        return States.WAITING_NAME
 
     update.effective_message.reply_text(Strings.GOT_PHOTO)
     callback_context.user_data["photos"][update.effective_message.caption] = update.message.photo[-1].file_id
@@ -50,6 +57,9 @@ def handle_new_photo(update: Update, callback_context: CallbackContext):
 def handle_name(update: Update, callback_context: CallbackContext):
     if update.effective_message.text in callback_context.user_data["photos"].keys():
         update.effective_message.reply_text(Strings.OLD_NAME)
+        return States.WAITING_NAME
+    elif update.effective_message.text.split()[0] not in df.values:
+        update.effective_message.reply_text(Strings.UNKNOWN_NAME)
         return States.WAITING_NAME
     if "photos" not in callback_context.user_data.keys():
         callback_context.user_data["photos"] = {}
