@@ -211,6 +211,7 @@ def handle_finish_quiz(update: Update, callback_context: CallbackContext):
     for index, result in enumerate(zip(callback_context.user_data["user_answers"],
                                        callback_context.user_data["questions"])):
         if index == len(callback_context.user_data["user_answers"]) - 1 and callback_context.user_data["is_cancel"]:
+            callback_context.user_data['questions_asked'] -= 1
             break
         current_answer, current_right_answer = result
         current_right_answer = current_right_answer[0]
