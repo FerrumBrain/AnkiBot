@@ -221,7 +221,7 @@ def handle_finish_quiz(update: Update, callback_context: CallbackContext):
         callback_context.user_data["guesses"][current_right_answer][1] += 1
 
     result = right_answer / callback_context.user_data['questions_asked']
-    if result <= 0.4 or right_answer == 0:
+    if result <= 0.4 or callback_context.user_data['questions_asked'] == 0:
         quality = Strings.BAD_RESULT
     elif result <= 0.8:
         quality = Strings.GOOD_RESULT
