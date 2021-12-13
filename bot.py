@@ -199,10 +199,11 @@ def handle_finish_quiz(update: Update, callback_context: CallbackContext):
         update.callback_query.answer(Strings.SELECT, show_alert=True)
         return
 
-    if callback_context.user_data["user_answers"][callback_context.user_data["question_id"]] == callback_context.user_data["questions"][callback_context.user_data["question_id"]][0]:
-        update.callback_query.answer(Strings.CORRECT_ANSWER, show_alert=True)
-    elif not callback_context.user_data["is_cancel"]:
-        update.callback_query.answer(f'{Strings.INCORRECT_ANSWER}\n{Strings.YOUR_ANSWER}{callback_context.user_data["user_answers"][callback_context.user_data["question_id"]]}\n{Strings.RIGHT_ANSWER}{callback_context.user_data["questions"][callback_context.user_data["question_id"]][0]}', show_alert=True)
+    if not callback_context.user_data["is_cancel"]:
+        if callback_context.user_data["user_answers"][callback_context.user_data["question_id"]] == callback_context.user_data["questions"][callback_context.user_data["question_id"]][0]:
+            update.callback_query.answer(Strings.CORRECT_ANSWER, show_alert=True)
+        else:
+            update.callback_query.answer(f'{Strings.INCORRECT_ANSWER}\n{Strings.YOUR_ANSWER}{callback_context.user_data["user_answers"][callback_context.user_data["question_id"]]}\n{Strings.RIGHT_ANSWER}{callback_context.user_data["questions"][callback_context.user_data["question_id"]][0]}', show_alert=True)
 
 
     update.effective_message.delete()
